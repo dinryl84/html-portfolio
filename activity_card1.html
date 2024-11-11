@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Multiple Choice Quiz</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .quiz-container {
+      max-width: 600px;
+      margin: 2rem auto;
+    }
+    .question {
+      font-weight: bold;
+    }
+    .options {
+      list-style-type: none;
+      padding: 0;
+    }
+    .options li {
+      margin-bottom: 10px;
+    }
+    .button-container {
+      display: flex;
+      justify-content: flex-start;
+      gap: 10px; /* Adjusts the space between the buttons */
+      margin-top: 1rem;
+      
+    }
+  </style>
+</head>
+<body>
+
+<div class="quiz-container">
+  <h2 class="text-center">Multiple Choice Quiz</h2>
+  <div id="quiz">
+    <div id="question-container">
+      <p id="question" class="question"></p>
+      <ul id="options" class="options"></ul>
+    </div>
+    <div class="button-container">
+      <button id="back-btn" class="btn btn-secondary mt-3" onclick="previousQuestion()" style="display: none;">Back</button>
+      <button id="next-btn" class="btn btn-primary mt-3" onclick="nextQuestion()">Next</button>
+    </div>
+    <div id="result" class="mt-4 text-center"></div>
+  </div>
+</div>
+
+<script>
+  // Quiz questions and answers
+  const quizData = [
+    {
+      question: "What is the capital of France?",
+      options: ["Berlin", "Madrid", "Paris", "Lisbon"],
+      answer: "Paris"
+    },
+    {
+      question: "Which planet is known as the Red Planet?",
+      options: ["Earth", "Mars", "Jupiter", "Saturn"],
+      answer: "Mars"
+    },
+    {
+      question: "What is the largest mammal?",
+      options: ["Elephant", "Blue Whale", "Giraffe", "Shark"],
+      answer: "Blue Whale"
+    }
+  ];
+
+  let currentQuestion = 0;
+  let score = 0;
+  let selectedAnswers = [];
+
+  function loadQuestion() {
+    const questionEl = document.getElementById("question");
+    const optionsEl = document.getElementById("options");
+    const currentQuiz = quizData[currentQuestion];
+    
+    questionEl.textContent = currentQuiz.question;
+    optionsEl.innerHTML = "";
+
+    currentQuiz.options.forEach(option => {
+      const li = document.createElement("li");
+      li.innerHTML = `<input type="radio" name="option" value="${option}" ${selectedAnswers[currentQuestion] === option ? 'checked' : ''}> ${option}`;
+      optionsEl.appendChild(li);
+    });
+
+    // Display Back button only if not on the first question
+    document.getElementById("back-btn").style.display = currentQuestion > 0 ? "inline-block" : "none";
+  }
+
+  function nextQuestion() {
+    const selectedOption = document.querySelector('input[name="option"]:checked');
+    if (!selectedOption) {
+      alert("Please select an answer!");
+      return;
+    }
+
+    // Store the selected answer
+    selectedAnswers[currentQuestion] = selectedOption.value;
+
+    // Check if answer is correct and increment score if it is
+    if (selectedOption.value === quizData[currentQuestion].answer) {
+      score++;
+    }
+
+    currentQuestion++;
+
+    if (currentQuestion < quizData.length) {
+      loadQuestion();
+    } else {
+      showResult();
+    }
+  }
+
+  function previousQuestion() {
+    if (currentQuestion > 0) {
+      // Decrement score if the answer to the current question was correct
+      if (selectedAnswers[currentQuestion] === quizData[currentQuestion].answer) {
+        score--;
+      }
+
+      // Go back to the previous question
+      currentQuestion--;
+      loadQuestion();
+    }
+  }
+
+  function showResult() {
+    document.getElementById("quiz").innerHTML = `
+      <h3 class="text-center">Quiz Completed!</h3>
+      <p class="text-center">Your score: ${score} / ${quizData.length}</p>
+      <button class="btn btn-secondary mt-3" onclick="restartQuiz()">Restart Quiz</button>
+    `;
+  }
+
+  function restartQuiz() {
+    currentQuestion = 0;
+    score = 0;
+    selectedAnswers = [];
+    document.getElementById("quiz").innerHTML = `
+      <div id="question-container">
+        <p id="question" class="question"></p>
+        <ul id="options" class="options"></ul>
+      </div>
+      <div class="button-container">
+        <button id="back-btn" class="btn btn-secondary mt-3" onclick="previousQuestion()" style="display: none;">Back</button>
+        <button id="next-btn" class="btn btn-primary mt-3" onclick="nextQuestion()">Next</button>
+      </div>
+      <div id="result" class="mt-4 text-center"></div>
+    `;
+    loadQuestion();
+  }
+
+  // Load the first question when the page loads
+  loadQuestion();
+</script>
+
+</body>
+</html>

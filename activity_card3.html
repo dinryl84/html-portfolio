@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive Course Presentation</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .slide { display: none; text-align: center; padding: 20px; background-color: #f8f9fa; border-radius: 5px; }
+    .slide.active { display: block; }
+    .drag-word { display: inline-block; padding: 5px 10px; background-color: #007bff; color: white; margin: 5px; cursor: pointer; border-radius: 3px; }
+    .drop-zone { display: inline-block; padding: 10px; width: 150px; border-bottom: 2px dashed #ccc; min-height: 30px; }
+    .correct { background-color: green !important; color: white; }
+    .wrong { background-color: red !important; color: white; }
+  </style>
+</head>
+<body>
+
+<div class="container mt-5">
+  <h2 class="text-center">Interactive Course Presentation</h2>
+
+  <div id="slides">
+    <div class="slide active">
+      <h3>Welcome to the Course</h3>
+      <p>This is the introduction slide. Learn about the course objectives.</p>
+    </div>
+
+    <div class="slide">
+      <h3>Multiple Choice Question</h3>
+      <p>What is the capital of France?</p>
+      <div class="form-check">
+        <input class="form-check-input" type="radio" name="q1" onclick="checkAnswer(this, 'Paris')" value="Paris">
+        <label class="form-check-label">Paris</label>
+      </div>
+      <div class="form-check">
+        <input class="form-check-input" type="radio" name="q1" onclick="checkAnswer(this, 'Paris')" value="London">
+        <label class="form-check-label">London</label>
+      </div>
+    </div>
+
+    <div class="slide">
+      <h3>Fill in the Blanks</h3>
+      <p>The largest planet is <input type="text" oninput="checkFillInBlank(this, 'Jupiter')" placeholder="Type your answer"></p>
+    </div>
+
+    <div class="slide">
+      <h3>Drag the Words</h3>
+      <p>Drag the word to the correct blank:</p>
+      <div class="drop-zone" data-correct="Elephant"></div> is the largest land animal.
+      <div class="mt-3">
+        <span class="drag-word" draggable="true" ondragstart="drag(event)" data-word="Elephant">Elephant</span>
+        <span class="drag-word" draggable="true" ondragstart="drag(event)" data-word="Lion">Lion</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navigation Buttons -->
+  <div class="d-flex justify-content-between mt-4">
+    <button id="prevBtn" class="btn btn-secondary" onclick="changeSlide(-1)" disabled>Previous</button>
+    <button id="nextBtn" class="btn btn-primary" onclick="changeSlide(1)">Next</button>
+  </div>
+
+  <!-- Progress Bar -->
+  <div class="progress mt-3">
+    <div id="progressBar" class="progress-bar" role="progressbar" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">25%</div>
+  </div>
+</div>
+
+<script>
+  let currentSlide = 0;
+  const slides = document.querySelectorAll('.slide');
+  const progressBar = document.getElementById('progressBar');
+
+  function showSlide(index) {
+    slides.forEach((slide, i) => {
+      slide.classList.remove('active');
+      if (i === index) slide.classList.add('active');
+    });
+    
+    document.getElementById('prevBtn').disabled = index === 0;
+    document.getElementById('nextBtn').textContent = index === slides.length - 1 ? 'Finish' : 'Next';
+    
+    const progress = ((index + 1) / slides.length) * 100;
+    progressBar.style.width = progress + '%';
+    progressBar.setAttribute('aria-valuenow', progress);
+    progressBar.textContent = Math.round(progress) + '%';
+  }
+
+  function changeSlide(step) {
+    currentSlide += step;
+    if (currentSlide >= slides.length) {
+      alert('Presentation complete!');
+      currentSlide = slides.length - 1;
+    }
+    showSlide(currentSlide);
+  }
+
+  function checkAnswer(option, correctAnswer) {
+    if (option.value === correctAnswer) option.parentElement.classList.add('correct');
+    else option.parentElement.classList.add('wrong');
+  }
+
+  function checkFillInBlank(input, correctAnswer) {
+    if (input.value.trim().toLowerCase() === correctAnswer.toLowerCase()) {
+      input.classList.add('correct');
+      input.classList.remove('wrong');
+    } else {
+      input.classList.remove('correct');
+      input.classList.add('wrong');
+    }
+  }
+
+  function drag(event) {
+    event.dataTransfer.setData('text', event.target.getAttribute('data-word'));
+  }
+
+  document.querySelectorAll('.drop-zone').forEach(zone => {
+    zone.addEventListener('dragover', (e) => e.preventDefault());
+    zone.addEventListener('drop', function(e) {
+      e.preventDefault();
+      const droppedWord = e.dataTransfer.getData('text');
+      if (droppedWord === this.getAttribute('data-correct')) {
+        this.classList.add('correct');
+        this.textContent = droppedWord;
+      } else {
+        this.classList.add('wrong');
+        this.textContent = droppedWord;
+      }
+    });
+  });
+
+  showSlide(currentSlide);
+</script>
+
+</body>
+</html>
